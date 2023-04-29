@@ -17,20 +17,43 @@ task['Как-то спокойно я вышел из ада, \n ужас рас
 
 
 curr_ans = []
-player_names = []
-player_list = []
+name_list = []
+id_list = []
+player_dict = dict()
 user_list = []
 right_ans = ''
+names_dict = dict()
+ans_counter = 0
 
 players = []
-teams = []
 
-comp = True
+chat_id = 0
+
+crunches = True
 
 class Player():
     name = ''
-    team = ''
     score = 0
+    id = 0
 
+machine = Player()
+machine.name = 'Bot'
+machine.id = 0
 
-player = Player()
+web = False
+
+truth = Player()
+truth.name = 'Truth'
+truth.id = 1
+
+ans_dict = dict()
+
+ref_list= []
+poets_dict = dict()
+poets_dict['Пастернак'] = 'https://rustih.ru/boris-pasternak/'
+poets_dict['Ахматова'] = 'https://rustih.ru/anna-axmatova/'
+poets_dict['Асадов'] = 'https://rustih.ru/eduard-asadov/'
+poets_dict['Цветаева'] = 'https://rustih.ru/marina-cvetaeva/'
+poets_dict['Бродский'] = 'https://rustih.ru/iosif-brodskij/'
+
+poem_marker =  '<div class="entry-title"><a href='

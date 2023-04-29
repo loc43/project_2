@@ -1,64 +1,65 @@
-import branch_1
-import branch_2
+from globals import bot, player_dict, name_list, Player, players
 import globals
-from globals import player
 from telebot import types
+import initiation
+#прикрутить базу данных с результатами игроков?
+#добавить таймер
+#прописать защиту от дурака: нельзя голосовать за себя
+# reply_to вместо
 
-bot = globals.bot
+name_list.append('Bot')
+globals.names_dict['Bot'] = globals.machine
+player_dict[0] = 'Bot'
+
+name_list.append('Truth')
+globals.names_dict['Truth'] = globals.machine
+player_dict[1] = 'Truth'
+
+
 @bot.message_handler(content_types=['text'])
-def start(message):
-    if message.text == '/start':
-        globals.user_list.append(message.from_user.id)
+def start_message(message):
+    if globals.crunches:
+        globals.chat_id = message.chat.id
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton('ИГРА')
         btn2 = types.KeyboardButton('ПРАВИЛА')
         markup.add(btn1, btn2)
-        bot.send_message(message.from_user.id, 'Привет. Я бот для игры в стихотворную завалинку. Если хочешь сыграть, напиши мне ИГРА, если хочешь узнать правила -- ПРАВИЛА', reply_markup = markup)
-        bot.register_next_step_handler(message, rules)
+        bot.send_message(message.chat.id, 'Привет. Я бот для игры в стихотворную завалинку. Если хочешь сыграть, напиши мне ИГРА, если хочешь узнать правила -- ПРАВИЛА. Для того, чтобы я работал корректно, нужно, чтобы каждый из вас активировал меня в личке и написал там свое имя. ', reply_markup = markup)
+        bot.register_next_step_handler_by_chat_id(globals.chat_id, step_2)
+    else:
+        initiation.game(message)
 
-def rules(message):
-    if message.text == 'ИГРА':
-        bot.register_next_step_handler(message, get_name)
-        bot.send_message(message.from_user.id, 'как тебя зовут?')
-    if message.text == 'ПРАВИЛА':
-        bot.send_message(message.from_user.id, 'Ведущий выбирает слово из официального источника энциклопедической направленности.' +
-                        'Каждый участник (или команда) пишет вариант энциклопедической статьи для выбранного слова, в то время как ведущий адаптирует и сокращает настоящий вариант.' + 
-                        'После того, как Ведущий зачитал все статьи, включая правильную, в произвольном порядке, игроки отдают свой голос той или иной статье.')
-        bot.register_next_step_handler(message, rules)
 
+def step_2(message):
+    if message.chat.id == globals.chat_id:
+        if message.text == 'ИГРА':    
+            globals.crunches = False
+            bot.send_message(globals.chat_id, 'Напишите ответом на этом сообщение, как вас зовут. Когда будете готовы, напишите Играть!')
+            bot.register_next_step_handler_by_chat_id(globals.chat_id, get_name)
+        elif message.text == 'ПРАВИЛА':
+            bot.send_message(message.chat.id, 'Ведущий выбирает слово из официального источника энциклопедической направленности.' +
+                            'Каждый участник (или команда) пишет вариант энциклопедической статьи для выбранного слова, в то время как ведущий адаптирует и сокращает настоящий вариант.' + 
+                            'После того, как Ведущий зачитал все статьи, включая правильную, в произвольном порядке, игроки отдают свой голос той или иной статье.')
+            bot.register_next_step_handler_by_chat_id(globals.chat_id, step_2)
+        else:
+            bot.send_message(message.chat.id, 'Боюсь, я не понял тебя. Попробуй еще раз.')
+            bot.bot.register_next_step_handler_by_chat_id(globals.chat_id, step_2)
 
 def get_name(message):
-    if message.text in globals.player_names:
-        bot.send_message(message.from_user.id, 'кажется, это имя уже занято. попробуй еще раз.')
-        bot.register_next_step_handler(message, get_name)
+    if message.text == 'Играть!':
+        initiation.step_3()
     else:
-        globals.player_names.append(message.text)
-        player.name = message.text
-        globals.player_list.append(player)
-        bot.send_message(message.from_user.id, 'из какой ты команды?')
-        bot.register_next_step_handler(message, get_team)
-
-def get_team(message):
-    player.team = message.text
-    bot.send_message(message.from_user.id, 'ты ' + player.name + ' из команды ' + player.team)
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton('ИГРАТЬ С КОМПЬЮТЕРОМ И ДРУЗЬЯМИ')
-    btn2 = types.KeyboardButton('ИГРАТЬ С ДРУЗЬЯМИ')
-    markup.add(btn1, btn2)
-    bot.send_message(message.from_user.id, 'выбери, как хочешь играть', reply_markup = markup)
-    bot.register_next_step_handler(message, level1)
-
-def level1(message):
-    global comp
-    if message.text == 'ИГРАТЬ С КОМПЬЮТЕРОМ И ДРУЗЬЯМИ':
-        comp = True
-        branch_1.init_comp(message)
-    else:
-        comp = False
-        branch_2.init_web(message)
-    
-    
+        if message.text in name_list:
+            bot.send_message(message.from_user.id, 'кажется, это имя уже занято. Попробуй еще раз.')
+        else:
+            bot.send_message(message.from_user.id, 'тебя зовут ' + message.text)
+            name_list.append(message.text)
+            player = Player()
+            player.name = message.text
+            player.id = message.from_user.id
+            players.append(player)
+            globals.names_dict[message.text] = player
+            player_dict[message.from_user.id] = message.text
+        bot.register_next_step_handler_by_chat_id(globals.chat_id, get_name)
 
 bot.polling(none_stop=True, interval=0)
-
-
