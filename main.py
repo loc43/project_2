@@ -1,6 +1,6 @@
 from globals import bot, player_dict, name_list, Player, players
-import globals
 from telebot import types
+import globals
 import initiation
 #прикрутить базу данных с результатами игроков?
 #добавить таймер
