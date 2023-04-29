@@ -2,10 +2,6 @@ from globals import bot, player_dict, name_list, Player, players
 from telebot import types
 import globals
 import initiation
-#прикрутить базу данных с результатами игроков?
-#добавить таймер
-#прописать защиту от дурака: нельзя голосовать за себя
-# reply_to вместо
 
 name_list.append('Bot')
 globals.names_dict['Bot'] = globals.machine
